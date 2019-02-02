@@ -1,7 +1,7 @@
 import platform
 import os
 import uuid
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import traceback
 import tempfile
@@ -103,10 +103,10 @@ infoServer = commandArgs.info_server
 #infoServer = "52.52.213.92"
 #infoServer = "letsrobot.tv:3100"
 
-print "info server:", infoServer
+print("info server:", infoServer)
 
 tempDir = tempfile.gettempdir()
-print "temporary directory:", tempDir
+print("temporary directory:", tempDir)
 
 if commandArgs.google_tts:
     import google.cloud.texttospeech_v1beta1
@@ -139,7 +139,7 @@ elif commandArgs.type == 'l298n':
     try:
         import configparser
     except ImportError:
-        print "You need to install configparser (sudo python -m pip install configparser)\n Ctrl-C to quit"
+        print("You need to install configparser (sudo python -m pip install configparser)\n Ctrl-C to quit")
         while True:
             pass # Halt program	to avoid error down the line.
 elif commandArgs.type == 'motozero':
@@ -157,7 +157,7 @@ elif commandArgs.type == 'owi_arm':
 elif commandArgs.type == 'mdd10':
     pass
 else:
-    print "invalid --type in command line"
+    print("invalid --type in command line")
     exit(0)
 
 serialDevice = commandArgs.serial_device
@@ -167,12 +167,12 @@ if commandArgs.type == 'motor_hat':
         from Adafruit_MotorHAT import Adafruit_MotorHAT, Adafruit_DCMotor
         motorsEnabled = True
     except ImportError:
-        print "You need to install Adafruit_MotorHAT"
-        print "Please install Adafruit_MotorHAT for python and restart this script."
-        print "To install: cd /usr/local/src && sudo git clone https://github.com/adafruit/Adafruit-Motor-HAT-Python-Library.git"
-        print "cd /usr/local/src/Adafruit-Motor-HAT-Python-Library && sudo python setup.py install"
-        print "Running in test mode."
-        print "Ctrl-C to quit"
+        print("You need to install Adafruit_MotorHAT")
+        print("Please install Adafruit_MotorHAT for python and restart this script.")
+        print("To install: cd /usr/local/src && sudo git clone https://github.com/adafruit/Adafruit-Motor-HAT-Python-Library.git")
+        print("cd /usr/local/src/Adafruit-Motor-HAT-Python-Library && sudo python setup.py install")
+        print("Running in test mode.")
+        print("Ctrl-C to quit")
         motorsEnabled = False
 
 # todo: specificity is not correct, this is specific to a bot with a claw, not all motor_hat based bots
@@ -182,7 +182,7 @@ if commandArgs.type == 'motor_hat':
 import time
 import atexit
 import sys
-import thread
+import _thread
 import subprocess
 if (commandArgs.type == 'motor_hat') or (commandArgs.type == 'l298n') or (commandArgs.type == 'motozero'):
     import RPi.GPIO as GPIO
@@ -196,14 +196,14 @@ url = "https://letsrobot.tv/get_robot_owner/" + robotID
 print(url)
 response = requests.request("GET", url)
 json_data = json.loads(response.text)
-print("owner:",json_data['owner'])
+print(("owner:",json_data['owner']))
       
 if commandArgs.type == 'motor_hat':
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(chargeIONumber, GPIO.IN)
 if commandArgs.type == 'l298n':
     mode=GPIO.getmode()
-    print " mode ="+str(mode)
+    print(" mode ="+str(mode))
     GPIO.cleanup()
     #Change the GPIO Pins to your connected motors in gpio.conf
     #visit http://bit.ly/1S5nQ4y for reference
@@ -228,12 +228,12 @@ if commandArgs.type == "pololu":
     try:
 	from pololu_drv8835_rpi import motors, MAX_SPEED
     except ImportError:
-	print "You need to install drv8835-motor-driver-rpi"
-        print "Please install drv8835-motor-driver-rpi for python and restart this script."
-        print "To install: cd /usr/local/src && sudo git clone https://github.com/pololu/drv8835-motor-driver-rpi"
-        print "cd /usr/local/src/drv8835-motor-driver-rpi && sudo python setup.py install"
-        print "Running in test mode."
-        print "Ctrl-C to quit"
+	print("You need to install drv8835-motor-driver-rpi")
+        print("Please install drv8835-motor-driver-rpi for python and restart this script.")
+        print("To install: cd /usr/local/src && sudo git clone https://github.com/pololu/drv8835-motor-driver-rpi")
+        print("cd /usr/local/src/drv8835-motor-driver-rpi && sudo python setup.py install")
+        print("Running in test mode.")
+        print("Ctrl-C to quit")
    
 if commandArgs.type == 'motozero':
     GPIO.cleanup()
@@ -468,20 +468,20 @@ def setup_serial():
     firstPortScan = False
     lastPorts = ports
     if len(ports) == 0:
-        print "error: could not find any valid serial port"
+        print("error: could not find any valid serial port")
         return
     port = ports[0]
     if serialDevice in ports:
         port = serialDevice
 
-    print ports
-    print port
+    print(ports)
+    print(port)
     serialBaud = 9600
     if ser is not None:
         try:
             ser.close()
         except:
-            print "closing serial failed continuing"
+            print("closing serial failed continuing")
     ser = serial.Serial(port, serialBaud, timeout=1)
 
 if commandArgs.type == 'serial':
@@ -491,7 +491,7 @@ if commandArgs.type == 'serial':
         try:
             telly.sendSettings(ser, commandArgs)
         except Exception as exception:
-            print exception
+            print(exception)
 
 def getControlHostPort():
 
@@ -509,30 +509,30 @@ chatHostPort = getChatHostPort()
 
 
 
-print "connecting to control socket.io", controlHostPort
+print("connecting to control socket.io", controlHostPort)
 controlSocketIO = SocketIO(controlHostPort['host'], controlHostPort['port'], LoggingNamespace, transports='websocket')
-print "finished using socket io to connect to control host port", controlHostPort
+print("finished using socket io to connect to control host port", controlHostPort)
 
 if commandArgs.enable_chat_server_connection:
-    print "connecting to chat socket.io", chatHostPort
+    print("connecting to chat socket.io", chatHostPort)
     chatSocket = SocketIO(chatHostPort['host'], chatHostPort['port'], LoggingNamespace, transports='websocket')
-    print 'finished using socket io to connect to chat ', chatHostPort
+    print('finished using socket io to connect to chat ', chatHostPort)
 else:
-    print "chat server connection disabled"
+    print("chat server connection disabled")
 
 if commandArgs.tts_delay_enabled or commandArgs.woot_room != '':
     userSocket = SocketIO('https://letsrobot.tv', 8000, LoggingNamespace, transports='websocket')
 
-print "connecting to app server socket.io"
+print("connecting to app server socket.io")
 appServerSocketIO = SocketIO(infoServer, 8022, LoggingNamespace, transports='websocket')
-print "finished connecting to app server"
+print("finished connecting to app server")
 
 def setServoPulse(channel, pulse):
   pulseLength = 1000000                   # 1,000,000 us per second
   pulseLength /= 60                       # 60 Hz
-  print "%d us per period" % pulseLength
+  print("%d us per period" % pulseLength)
   pulseLength /= 4096                     # 12 bits of resolution
-  print "%d us per bit" % pulseLength
+  print("%d us per bit" % pulseLength)
   pulse *= 1000
   pulse /= pulseLength
   pwm.setPWM(channel, 0, pulse)
@@ -560,9 +560,9 @@ network={{
 
 def isInternetConnected():
     try:
-        urllib2.urlopen('https://www.google.com', timeout=1)
+        urllib.request.urlopen('https://www.google.com', timeout=1)
         return True
-    except urllib2.URLError as err:
+    except urllib.error.URLError as err:
         return False
 
 
@@ -572,10 +572,10 @@ def configWifiLogin(secretKey):
 
     url = 'https://%s/get_wifi_login/%s' % (infoServer, secretKey)
     try:
-        print "GET", url
-        response = urllib2.urlopen(url).read()
+        print("GET", url)
+        response = urllib.request.urlopen(url).read()
         responseJson = json.loads(response)
-        print "get wifi login response:", response
+        print("get wifi login response:", response)
 
         with open("/etc/wpa_supplicant/wpa_supplicant.conf", 'r') as originalWPAFile:
             originalWPAText = originalWPAFile.read()
@@ -583,15 +583,15 @@ def configWifiLogin(secretKey):
         wpaText = WPA_FILE_TEMPLATE.format(name=responseJson['wifi_name'], password=responseJson['wifi_password'])
 
 
-        print "original(" + originalWPAText + ")"
-        print "new(" + wpaText + ")"
+        print("original(" + originalWPAText + ")")
+        print("new(" + wpaText + ")")
         
         if originalWPAText != wpaText:
 
             wpaFile = open("/etc/wpa_supplicant/wpa_supplicant.conf", 'w')        
 
-            print wpaText
-            print
+            print(wpaText)
+            print()
             wpaFile.write(wpaText)
             wpaFile.close()
 
@@ -603,7 +603,7 @@ def configWifiLogin(secretKey):
 
         
     except:
-        print "exception while configuring setting wifi", url
+        print("exception while configuring setting wifi", url)
         traceback.print_exc()
 
 
@@ -616,7 +616,7 @@ def incrementArmServo(channel, amount):
 
     armServo[channel] += amount
 
-    print "arm servo positions:", armServo
+    print("arm servo positions:", armServo)
 
     if armServo[channel] > servoMax[channel]:
         armServo[channel] = servoMax[channel]
@@ -665,9 +665,9 @@ def handle_exclusive_control(args):
             status = args['status']
 
         if status == 'start':
-                print "start exclusive control"
+                print("start exclusive control")
         if status == 'end':
-                print "end exclusive control"
+                print("end exclusive control")
 
 
                 
@@ -699,7 +699,7 @@ def say(message):
     else:
         # espeak tts
         for hardwareNumber in (2, 0, 3, 1, 4):
-            print 'plughw:%d,0' % hardwareNumber
+            print('plughw:%d,0' % hardwareNumber)
             if commandArgs.male:
                 os.system('cat ' + tempFilePath + ' | espeak --stdout | aplay -D plughw:%d,0' % hardwareNumber)
             else:
@@ -716,11 +716,11 @@ def handle_user_socket_chat_message(args):
                 process_woot(messageSplit[0], int(messageSplit[2]))
 
 def process_woot(username, amount): # do stuff with woots here!!
-    print 'woot!! username: ', username, ' amount: ', amount
+    print('woot!! username: ', username, ' amount: ', amount)
 
 def handle_chat_message(args):
     global tablemode
-    print "chat message received:", args
+    print("chat message received:", args)
 
     if commandArgs.tts_delay_enabled:
         processing.append(args['_id'])
@@ -728,7 +728,7 @@ def handle_chat_message(args):
         processing.remove(args['_id'])
         if args['_id'] in deleted:
             deleted.remove(args['_id'])
-            print args['_id'] + ' was deleted before TTS played!'
+            print(args['_id'] + ' was deleted before TTS played!')
             exit()
         else:
             deleted.remove(args['_id'])
@@ -787,7 +787,7 @@ def moveMDD10(command, speedPercent):
 
 
 def moveAdafruitPWM(command):
-    print "move adafruit pwm command", command
+    print("move adafruit pwm command", command)
 
     if command == 'L':
         pwm.setPWM(1, 0, 300) # turn left
@@ -880,21 +880,21 @@ def maxSpeedThenNormal():
     global maxSpeedEnabled
     
     maxSpeedEnabled = True
-    print "max speed"
+    print("max speed")
     time.sleep(120)
     maxSpeedEnabled = False
-    print "normal speed"
+    print("normal speed")
     
 
     
 def handleLoudCommand(seconds):
 
-    thread.start_new_thread(changeVolumeHighThenNormal, (seconds,))
+    _thread.start_new_thread(changeVolumeHighThenNormal, (seconds,))
 
 
 def handleMaxSpeedCommand():
 
-    thread.start_new_thread(maxSpeedThenNormal, ())
+    _thread.start_new_thread(maxSpeedThenNormal, ())
     
 
 
@@ -938,7 +938,7 @@ def handle_command(args):
         global drivingSpeed
         global handlingCommand
 
-        if 'robot_id' in args and args['robot_id'] == robotID: print "received message:", args
+        if 'robot_id' in args and args['robot_id'] == robotID: print("received message:", args)
         # Note: If you are adding features to your bot,
         # you can get direct access to incomming commands right here.
 
@@ -958,7 +958,7 @@ def handle_command(args):
             
         if 'command' in args and 'robot_id' in args and args['robot_id'] == robotID:
 
-            print('got command', args)
+            print(('got command', args))
 
             command = args['command']
             if tablemode == 1:
@@ -980,12 +980,12 @@ def handle_command(args):
                             
             if commandArgs.type == 'mdd10':
                 if maxSpeedEnabled:
-                    print "AT MAX....................."
-                    print maxSpeedEnabled
+                    print("AT MAX.....................")
+                    print(maxSpeedEnabled)
                     moveMDD10(command, 100)
                 else:
-                    print "NORMAL................."
-                    print maxSpeedEnabled
+                    print("NORMAL.................")
+                    print(maxSpeedEnabled)
                     moveMDD10(command, int(float(drivingSpeedActuallyUsed) / 2.55))                
 			
             if commandArgs.type == 'adafruit_pwm':
@@ -1004,7 +1004,7 @@ def handle_command(args):
                 try:
                     robot_util.sendSerialCommand(ser, command)
                 except Exception as exception:
-                    print exception
+                    print(exception)
                     setup_serial()
 
             if commandArgs.type == 'motor_hat' and motorsEnabled:
@@ -1217,7 +1217,7 @@ def runPololu(direction):
 	      motors.setSpeeds(0, 0)
 
 def handleStartReverseSshProcess(args):
-    print "starting reverse ssh"
+    print("starting reverse ssh")
     appServerSocketIO.emit("reverse_ssh_info", "starting")
 
     returnCode = subprocess.call(["/usr/bin/ssh",
@@ -1228,25 +1228,25 @@ def handleStartReverseSshProcess(args):
                                   commandArgs.reverse_ssh_host])
 
     appServerSocketIO.emit("reverse_ssh_info", "return code: " + str(returnCode))
-    print "reverse ssh process has exited with code", str(returnCode)
+    print("reverse ssh process has exited with code", str(returnCode))
 
     
 def handleEndReverseSshProcess(args):
-    print "handling end reverse ssh process"
+    print("handling end reverse ssh process")
     resultCode = subprocess.call(["killall", "ssh"])
-    print "result code of killall ssh:", resultCode
+    print("result code of killall ssh:", resultCode)
 
 def onHandleCommand(*args):
-   thread.start_new_thread(handle_command, args)
+   _thread.start_new_thread(handle_command, args)
 
 def onHandleExclusiveControl(*args):
-   thread.start_new_thread(handle_exclusive_control, args)
+   _thread.start_new_thread(handle_exclusive_control, args)
 
 def onHandleChatMessage(*args):
-   thread.start_new_thread(handle_chat_message, args)
+   _thread.start_new_thread(handle_chat_message, args)
 
 def onHandleUserSocketChatMessage(*args):
-       thread.start_new_thread(handle_user_socket_chat_message, args)
+       _thread.start_new_thread(handle_user_socket_chat_message, args)
 
 processing = []
 deleted = []
@@ -1255,43 +1255,43 @@ def onHandleChatMessageRemoved(*args):
         deleted.append(args[0]['message_id'])
 
 def onHandleAppServerConnect(*args):
-    print
-    print "chat socket.io connect"
-    print
+    print()
+    print("chat socket.io connect")
+    print()
     identifyRobotID()
 
 
 def onHandleAppServerReconnect(*args):
-    print
-    print "app server socket.io reconnect"
-    print
+    print()
+    print("app server socket.io reconnect")
+    print()
     identifyRobotID()    
     
 
 def onHandleAppServerDisconnect(*args):
-    print
-    print "app server socket.io disconnect"
-    print
+    print()
+    print("app server socket.io disconnect")
+    print()
 
 
 
    
 def onHandleChatConnect(*args):
-    print
-    print "chat socket.io connect"
-    print
+    print()
+    print("chat socket.io connect")
+    print()
     identifyRobotID()
 
 def onHandleChatReconnect(*args):
-    print
-    print "chat socket.io reconnect"
-    print
+    print()
+    print("chat socket.io reconnect")
+    print()
     identifyRobotID()
     
 def onHandleChatDisconnect(*args):
-    print
-    print "chat socket.io disconnect"
-    print
+    print()
+    print("chat socket.io disconnect")
+    print()
 
 def onHandleControlConnect(*args):
     controlSocketIO.emit('robot_id', robotID)
@@ -1300,12 +1300,12 @@ def onHandleControlReconnect(*args):
     controlSocketIO.emit('robot_id', robotID)
 
 def onHandleControlDisconnect(*args):
-    print
-    print "control socket.io disconnect"
-    print
+    print()
+    print("control socket.io disconnect")
+    print()
     newControlHostPort = getControlHostPort() #Reget control port will start if it closed for whatever reason
     if controlHostPort['port'] != newControlHostPort['port']: #See if the port is not the same as before
-	print "restart: control host port changed"
+	print("restart: control host port changed")
 	sys.exit(1) #Auto restart script will restart if the control port is not the same (which is unlikely)
 
 #from communication import socketIO
@@ -1333,10 +1333,10 @@ if commandArgs.enable_chat_server_connection:
 
 
 def startReverseSshProcess(*args):
-   thread.start_new_thread(handleStartReverseSshProcess, args)
+   _thread.start_new_thread(handleStartReverseSshProcess, args)
 
 def endReverseSshProcess(*args):
-   thread.start_new_thread(handleEndReverseSshProcess, args)
+   _thread.start_new_thread(handleEndReverseSshProcess, args)
 
 appServerSocketIO.on('reverse_ssh_8872381747239', startReverseSshProcess)
 appServerSocketIO.on('end_reverse_ssh_8872381747239', endReverseSshProcess)
@@ -1381,13 +1381,13 @@ def ipInfoUpdate():
 
 # true if it's on the charger and it needs to be charging
 def isCharging():
-    print "is charging current value", chargeValue
+    print("is charging current value", chargeValue)
 
     # only tested for motor hat robot currently, so only runs with that type
     if commandArgs.type == "motor_hat":
-        print "RPi.GPIO is in sys.modules"
+        print("RPi.GPIO is in sys.modules")
         if chargeValue < 99: # if it's not full charged already
-            print "charge value is low"
+            print("charge value is low")
             return GPIO.input(chargeIONumber) == 1 # return whether it's connected to the dock
 
     return False
@@ -1398,7 +1398,7 @@ def sendChargeState():
     charging = isCharging()
     chargeState = {'robot_id': robotID, 'charging': charging}
     appServerSocketIO.emit('charge_state', chargeState)
-    print "charge state:", chargeState
+    print("charge state:", chargeState)
 
 def sendChargeStateCallback(x):
     sendChargeState()
@@ -1411,7 +1411,7 @@ if commandArgs.type == 'motor_hat':
     
 def identifyRobotID():
     """tells the server which robot is using the connection"""
-    print "sending identify robot id messages"
+    print("sending identify robot id messages")
     if commandArgs.enable_chat_server_connection:
         chatSocket.emit('identify_robot_id', robotID);
     appServerSocketIO.emit('identify_robot_id', robotID);
@@ -1443,12 +1443,12 @@ def updateChargeApproximation():
         file = open(path, 'r')
         try:
             chargeValue = float(file.read())
-            print "error reading float from file", path
+            print("error reading float from file", path)
         except:
             chargeValue = 0
         file.close()
     else:
-        print "setting charge value to zero"
+        print("setting charge value to zero")
         chargeValue = 0
 
     chargePerSecond = 1.0 / secondsToCharge
@@ -1469,7 +1469,7 @@ def updateChargeApproximation():
     file.write(str(chargeValue))
     file.close()        
 
-    print "charge value updated to", chargeValue
+    print("charge value updated to", chargeValue)
 
     
 
@@ -1507,16 +1507,16 @@ def waitForUserServer():
         userSocket.wait(seconds=1)
 
 def startListenForAppServer():
-   thread.start_new_thread(waitForAppServer, ())
+   _thread.start_new_thread(waitForAppServer, ())
 
 def startListenForControlServer():
-   thread.start_new_thread(waitForControlServer, ())
+   _thread.start_new_thread(waitForControlServer, ())
 
 def startListenForChatServer():
-   thread.start_new_thread(waitForChatServer, ())
+   _thread.start_new_thread(waitForChatServer, ())
 
 def startListenForUserServer():
-    thread.start_new_thread(waitForUserServer, ())
+    _thread.start_new_thread(waitForUserServer, ())
 
 
 startListenForControlServer()
