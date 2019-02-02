@@ -545,7 +545,7 @@ def getControlHostPort():
     url = 'https://%s/get_control_host_port/%s?version=2' % (
         infoServer, commandArgs.robot_id)
     response = robot_util.getWithRetry(url, secure=commandArgs.secure_cert)
-    return json.loads(response)
+    return str(json.loads(response))
 
 
 def getChatHostPort():
