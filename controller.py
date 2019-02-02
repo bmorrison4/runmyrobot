@@ -686,7 +686,7 @@ def say(message):
         os.system('festival --tts < ' + tempFilePath)
     #os.system('espeak < /tmp/speech.txt')
 
-    else if commandArgs.google_tts:
+    elif commandArgs.google_tts:
         synthesis_input = texttospeech.types.SynthesisInput(text=message)
         response = client.synthesize_speech(synthesis_input, voice, audio_config)
         tempFilePath = os.path.join(tempDir, "wav_" + str(uuid.uuid4()) + ".wav")
