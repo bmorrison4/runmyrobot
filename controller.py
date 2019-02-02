@@ -65,9 +65,14 @@ parser.add_argument('--speaker-device', default=2, type=int)
 parser.add_argument('--tts-delay-enabled', dest='tts_delay_enabled', action='store_true')
 parser.add_argument('--tts-delay-seconds', dest='tts_delay_seconds', type=int, default=5)
 parser.add_argument('--woot-room', help="Room to enable woot events", default='')
+parser.add_argument('--google-tts', help='Enable Google TTS', dest='google_tts', action='store_true')
+parser.set_defaults(google_tts=False)
+parser.add_argument('--google-auth-key', help='Authentication key for Google TTS', default='/home/pi/key.json')
+parser.add_argument('--google-voice', help='Name of the voice for Google TTS', default='en-US-Standard-A')
+parser.add_argument('--google-language-code', help='Language code for Google TTS', default='en-US')
 
 commandArgs = parser.parse_args()
-print commandArgs
+print (commandArgs)
 
 chargeCheckInterval = 5
 chargeValue = 0.0
@@ -103,6 +108,19 @@ print "info server:", infoServer
 tempDir = tempfile.gettempdir()
 print "temporary directory:", tempDir
 
+if commandArgs.google_tts:
+    import google.cloud.texttospeech_v1beta1
+    import google.cloud.storage
+    client = texttospeech_v1beta1.TextToSpeechClient(
+            credentials=storage.Client.from_service_account_json(commandArgs.google_key_file)
+        )
+        voice = texttospeech_v1beta1.types.VoiceSelectionParams(
+            name=commandArgs.google_voice,
+            language_code=commandArgs.google_language_code
+        )
+        audio_config = texttospeech_v1beta1.types.AudioConfig(
+            audio_encoding=texttospeech_v1beta1.enums.AudioEncoding.LINEAR16
+        )
 
 # motor controller specific intializations
 if commandArgs.type == 'none':
@@ -667,6 +685,16 @@ def say(message):
         # festival tts
         os.system('festival --tts < ' + tempFilePath)
     #os.system('espeak < /tmp/speech.txt')
+
+    else if commandArgs.google_tts:
+        synthesis_input = texttospeech.types.SynthesisInput(text=message)
+        response = client.synthesize_speech(synthesis_input, voice, audio_config)
+        tempFilePath = os.path.join(tempDir, "wav_" + str(uuid.uuid4()) + ".wav")
+
+        for hardwareNumber in (2, 0, 3, 1, 4):
+            with open(tempFilePath, 'wb') as out:
+                out.write(response.audio_content)
+                os.system('aplay ' + tempFilePath + ' -D plughw:%d,0' % hardwareNumber)
 
     else:
         # espeak tts
