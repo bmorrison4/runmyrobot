@@ -136,18 +136,18 @@ tempDir = tempfile.gettempdir()
 print("temporary directory:", tempDir)
 
 if commandArgs.google_tts:
-    import google.cloud.texttospeech_v1beta1
+    import google.cloud.texttospeech
     import google.cloud.storage
-    client = texttospeech_v1beta1.TextToSpeechClient(
+    client = texttospeech.TextToSpeechClient(
         credentials=storage.Client.from_service_account_json(
             commandArgs.google_key_file)
     )
-    voice = texttospeech_v1beta1.types.VoiceSelectionParams(
+    voice = texttospeech.types.VoiceSelectionParams(
         name=commandArgs.google_voice,
         language_code=commandArgs.google_language_code
     )
-    audio_config = texttospeech_v1beta1.types.AudioConfig(
-        audio_encoding=texttospeech_v1beta1.enums.AudioEncoding.LINEAR16
+    audio_config = texttospeech.types.AudioConfig(
+        audio_encoding=texttospeech.enums.AudioEncoding.LINEAR16
     )
 
 # motor controller specific intializations
