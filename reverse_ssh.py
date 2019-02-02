@@ -1,4 +1,4 @@
-from __future__  import print_function
+
 import os
 import json
 import subprocess
@@ -10,7 +10,7 @@ except:
     import websocket
     import psutil
 try:
-    import thread
+    import _thread
 except ImportError:
     import _thread as thread
 import time
@@ -65,7 +65,7 @@ def on_open(ws):
     print("### websocket opened ###")
     def run(*args):
         ws.send(json.dumps({"e": "identify", "d": robot_id}))
-    thread.start_new_thread(run, ())
+    _thread.start_new_thread(run, ())
 
 robot_id = 'Not Found'
 
@@ -120,8 +120,8 @@ if __name__ == "__main__":
         locate_robot_id()
     except Exception as e:
         print(e)
-    thread.start_new_thread(locate_loop, ())
-    thread.start_new_thread(status_loop, ())
+    _thread.start_new_thread(locate_loop, ())
+    _thread.start_new_thread(status_loop, ())
 
     #websocket.enableTrace(True)
     ws = websocket.WebSocketApp("ws://rssh.letsrobot.tv:1500/",

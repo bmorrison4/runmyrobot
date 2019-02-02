@@ -11,7 +11,7 @@ import random
 import datetime
 import traceback
 import robot_util
-import thread
+import _thread
 import copy
 import argparse
 import audio_util
@@ -89,8 +89,8 @@ os.system("amixer -c %d cset numid=3 %d%%" % (commandArgs.audio_device_number, c
 #    sys.exit(0)
 
 
-print "initializing socket io"
-print "server:", server
+print("initializing socket io")
+print("server:", server)
 #print "port:", port
 
 
@@ -98,9 +98,9 @@ print "server:", server
 
 infoServerProtocol = commandArgs.info_server_protocol
 
-print "trying to connect to app server socket io", commandArgs.app_server_socketio_host, commandArgs.app_server_socketio_port
+print("trying to connect to app server socket io", commandArgs.app_server_socketio_host, commandArgs.app_server_socketio_port)
 appServerSocketIO = SocketIO(commandArgs.app_server_socketio_host, commandArgs.app_server_socketio_port, LoggingNamespace)
-print "finished initializing app server socket io"
+print("finished initializing app server socket io")
 
 def getVideoPort():
 
@@ -142,7 +142,7 @@ def randomSleep():
     """A short wait is good for quick recovery, but sometimes a longer delay is needed or it will just keep trying and failing short intervals, like because the system thinks the port is still in use and every retry makes the system think it's still in use. So, this has a high likelihood of picking a short interval, but will pick a long one sometimes."""
 
     timeToWait = random.choice((0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 5))
-    print "sleeping", timeToWait
+    print("sleeping", timeToWait)
     time.sleep(timeToWait)
 
 
@@ -150,43 +150,43 @@ def randomSleep():
 def startVideoCaptureLinux():
 
     videoPort = getVideoPort()
-    print "getting websocket relay host for video"
+    print("getting websocket relay host for video")
     websocketRelayHost = getWebsocketRelayHost()
 
-    print "websocket relay host for video:", websocketRelayHost
+    print("websocket relay host for video:", websocketRelayHost)
 
     videoHost = websocketRelayHost['host']
 
 
     # set brightness
     if (robotSettings.brightness is not None):
-        print "brightness"
+        print("brightness")
         os.system("v4l2-ctl -c brightness={brightness}".format(brightness=robotSettings.brightness))
 
     # set contrast
     if (robotSettings.contrast is not None):
-        print "contrast"
+        print("contrast")
         os.system("v4l2-ctl -c contrast={contrast}".format(contrast=robotSettings.contrast))
 
     # set saturation
     if (robotSettings.saturation is not None):
-        print "saturation"
+        print("saturation")
         os.system("v4l2-ctl -c saturation={saturation}".format(saturation=robotSettings.saturation))
 
     videoCommandLine1 = '/usr/local/bin/ffmpeg -f v4l2 -threads 4 -video_size {xres}x{yres} -i /dev/video{video_device_number} {rotation_option} -f mpegts -framerate 25 -codec:v mpeg1video -b:v {kbps}k -bf 0 -muxdelay 0.001 http://{video_host}:{video_port}/{stream_key}/{xres}/{yres}/'.format(video_device_number=robotSettings.video_device_number, rotation_option=rotationOption(), kbps=robotSettings.kbps, video_host=videoHost, video_port=videoPort, xres=robotSettings.xres, yres=robotSettings.yres, stream_key=robotSettings.stream_key)
     videoCommandLine2 = 'ffmpeg -f v4l2 -threads 4 -video_size {xres}x{yres} -i /dev/video{video_device_number} {rotation_option} -f mpegts -framerate 25 -codec:v mpeg1video -b:v {kbps}k -bf 0 -muxdelay 0.001 http://{video_host}:{video_port}/{stream_key}/{xres}/{yres}/'.format(video_device_number=robotSettings.video_device_number, rotation_option=rotationOption(), kbps=robotSettings.kbps, video_host=videoHost, video_port=videoPort, xres=robotSettings.xres, yres=robotSettings.yres, stream_key=robotSettings.stream_key)
     try:
         subprocess.Popen("ffmpeg")
-	print "ffmpeg found at ffmpeg"
+	print("ffmpeg found at ffmpeg")
 	return subprocess.Popen(shlex.split(videoCommandLine2))
     except:
-        print "ffmpeg not found at ffmpeg"
+        print("ffmpeg not found at ffmpeg")
         try:
             subprocess.Popen("/usr/local/bin/ffmpeg")
-	    print "ffmpeg found at /usr/local/bin/ffmpeg"
+	    print("ffmpeg found at /usr/local/bin/ffmpeg")
 	    return subprocess.Popen(shlex.split(videoCommandLine1))
         except:
-            print "ffmpeg not found at /usr/local/bin/ffmpeg"
+            print("ffmpeg not found at /usr/local/bin/ffmpeg")
     
 
 def startAudioCaptureLinux():
@@ -201,23 +201,23 @@ def startAudioCaptureLinux():
     ffmpegLocation = ''
     try:
         subprocess.Popen("ffmpeg")
-	print "ffmpeg found at ffmpeg"
+	print("ffmpeg found at ffmpeg")
 	ffmpegLocation = 'ffmpeg'
     except:
-        print "ffmpeg not found at ffmpeg"
+        print("ffmpeg not found at ffmpeg")
         try:
             subprocess.Popen("/usr/local/bin/ffmpeg")
-	    print "ffmpeg found at /usr/local/bin/ffmpeg"
+	    print("ffmpeg found at /usr/local/bin/ffmpeg")
 	    ffmpegLocation = '/usr/local/bin/ffmpeg'
         except:
-            print "ffmpeg not found at /usr/local/bin/ffmpeg"
+            print("ffmpeg not found at /usr/local/bin/ffmpeg")
     audioCommandLine1 = '%s -f alsa -ar 44100 -ac %d -i hw:%d -f mpegts -codec:a mp2 -b:a 32k -muxdelay 0.001 http://%s:%s/%s/640/480/' % (ffmpegLocation, robotSettings.mic_channels, audioDevNum, audioHost, audioPort, robotSettings.stream_key)
     audioCommandLine2 = 'arecord -D hw:%d -c %d -f S16_LE -r 32000 | %s -i - -ar 32000 -threads 4 -f mpegts -codec:a mp2 -b:a 128k -bufsize 8192k -muxdelay 0.001 http://%s:%s/%s/640/480/' % (audioDevNum, robotSettings.mic_channels, ffmpegLocation, audioHost, audioPort, robotSettings.stream_key)
     if robotSettings.arecord:
-        print audioCommandLine1
+        print(audioCommandLine1)
         return subprocess.Popen(shlex.split(audioCommandLine1))
     else:
-        print audioCommandLine2
+        print(audioCommandLine2)
         return subprocess.Popen(audioCommandLine2, shell=True)
 
 
@@ -234,32 +234,32 @@ def onCommandToRobot(*args):
 
     if len(args) > 0 and 'robot_id' in args[0] and args[0]['robot_id'] == robotID:
         commandMessage = args[0]
-        print('command for this robot received:', commandMessage)
+        print(('command for this robot received:', commandMessage))
         command = commandMessage['command']
 
         if command == 'VIDOFF':
             print ('disabling camera capture process')
-            print "args", args
+            print("args", args)
             robotSettings.camera_enabled = False
             os.system("killall ffmpeg")
 
         if command == 'VIDON':
             if robotSettings.camera_enabled:
                 print ('enabling camera capture process')
-                print "args", args
+                print("args", args)
                 robotSettings.camera_enabled = True
         
         sys.stdout.flush()
 
 
 def onConnection(*args):
-    print 'connection:', args
+    print('connection:', args)
     sys.stdout.flush()
 
 
 def onRobotSettingsChanged(*args):
-    print '---------------------------------------'
-    print 'set message recieved:', args
+    print('---------------------------------------')
+    print('set message recieved:', args)
     refreshFromOnlineSettings()
     
 
@@ -277,7 +277,7 @@ def overrideSettings(commandArgs, onlineSettings):
     global currentYres
     resolutionChanged = False
     c = copy.deepcopy(commandArgs)
-    print "onlineSettings:", onlineSettings
+    print("onlineSettings:", onlineSettings)
     if 'mic_enabled' in onlineSettings:
         c.mic_enabled = onlineSettings['mic_enabled']
     if 'xres' in onlineSettings:
@@ -290,31 +290,31 @@ def overrideSettings(commandArgs, onlineSettings):
             resolutionChanged = True
         c.yres = onlineSettings['yres']
         currentYres = onlineSettings['yres']
-    print "onlineSettings['mic_enabled']:", onlineSettings['mic_enabled']
+    print("onlineSettings['mic_enabled']:", onlineSettings['mic_enabled'])
     return c
 
 
 def refreshFromOnlineSettings():
     global robotSettings
     global resolutionChanged
-    print "refreshing from online settings"
+    print("refreshing from online settings")
     onlineSettings = getOnlineRobotSettings(robotID)
     robotSettings = overrideSettings(commandArgs, onlineSettings)
 
     if not robotSettings.mic_enabled:
-        print "KILLING**********************"
+        print("KILLING**********************")
         if audioProcess is not None:
-            print "KILLING**********************"
+            print("KILLING**********************")
             audioProcess.kill()
 
     if resolutionChanged:
-        print "KILLING VIDEO DUE TO RESOLUTION CHANGE**********************"
+        print("KILLING VIDEO DUE TO RESOLUTION CHANGE**********************")
         if videoProcess is not None:
-            print "KILLING**********************"
+            print("KILLING**********************")
             videoProcess.kill()
 
     else:
-        print "NOT KILLING***********************"
+        print("NOT KILLING***********************")
 
     
     
@@ -326,17 +326,17 @@ def main():
 
     
     # overrides command line parameters using config file
-    print "args on command line:", commandArgs
+    print("args on command line:", commandArgs)
 
 
     robotID = getRobotID()
     identifyRobotId()
 
-    print "robot id:", robotID
+    print("robot id:", robotID)
 
     refreshFromOnlineSettings()
 
-    print "args after loading from server:", robotSettings
+    print("args after loading from server:", robotSettings)
     
     appServerSocketIO.on('command_to_robot', onCommandToRobot)
     appServerSocketIO.on('connection', onConnection)
@@ -359,7 +359,7 @@ def main():
     if robotSettings.mic_enabled:
         if not commandArgs.dry_run:
             audioProcess = startAudioCaptureLinux()
-            thread.start_new_thread(killallFFMPEGIn30Seconds, ())
+            _thread.start_new_thread(killallFFMPEGIn30Seconds, ())
             #appServerSocketIO.emit('send_video_process_start_event', {'camera_id': commandArgs.camera_id})
         else:
             audioProcess = DummyProcess()
@@ -374,7 +374,7 @@ def main():
     # loop forever and monitor status of ffmpeg processes
     while True:
 
-        print "-----------------" + str(count) + "-----------------"
+        print("-----------------" + str(count) + "-----------------")
         
         appServerSocketIO.wait(seconds=1)
 
@@ -401,10 +401,10 @@ def main():
                     statusFile.write("time" + str(datetime.datetime.now()) + "\n")
                     statusFile.write("video process poll " + str(videoProcess.poll()) + " pid " + str(videoProcess.pid) + " restarts " + str(numVideoRestarts) + " \n")
                     statusFile.write("audio process poll " + str(audioProcess.poll()) + " pid " + str(audioProcess.pid) + " restarts " + str(numAudioRestarts) + " \n")
-                print "status file written"
+                print("status file written")
                 sys.stdout.flush()
             except:
-                print "status file could not be written"
+                print("status file could not be written")
                 traceback.print_exc()
                 sys.stdout.flush()
                 
@@ -413,7 +413,7 @@ def main():
         
         if robotSettings.camera_enabled:
         
-            print "video process poll", videoProcess.poll(), "pid", videoProcess.pid, "restarts", numVideoRestarts
+            print("video process poll", videoProcess.poll(), "pid", videoProcess.pid, "restarts", numVideoRestarts)
 
             # restart video if needed
             if videoProcess.poll() != None:
@@ -421,16 +421,16 @@ def main():
                 videoProcess = startVideoCaptureLinux()
                 numVideoRestarts += 1
         else:
-            print "video process poll: camera_enabled is false"
+            print("video process poll: camera_enabled is false")
             
 
                 
         if robotSettings.mic_enabled:
 
             if audioProcess is None:
-                print "audio process poll: audioProcess object is None"
+                print("audio process poll: audioProcess object is None")
             else:
-                print "audio process poll", audioProcess.poll(), "pid", audioProcess.pid, "restarts", numAudioRestarts
+                print("audio process poll", audioProcess.poll(), "pid", audioProcess.pid, "restarts", numAudioRestarts)
 
             # restart audio if needed
             if (audioProcess is None) or (audioProcess.poll() != None):
@@ -440,7 +440,7 @@ def main():
                 #appServerSocketIO.emit('send_video_process_start_event', {'camera_id': commandArgs.camera_id})               
                 numAudioRestarts += 1
         else:
-            print "audio process poll: mic_enabled is false"
+            print("audio process poll: mic_enabled is false")
 
         
         count += 1

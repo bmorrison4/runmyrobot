@@ -26,7 +26,7 @@ pin_ledG = 26
 #--------------------------------------
 
 def po_turnOn():
-	print "PO: TurnOn"
+	print("PO: TurnOn")
 	sleep(1)
 	GPIO.output(pin_po, False)
 	sleep(1)
@@ -37,16 +37,16 @@ po_turnOn()
 
 #SERIAL
 ser = serial.Serial(port='/dev/ttyAMA0', baudrate=115200, timeout=1)
-print "ser:", ser
+print("ser:", ser)
 
 # set UART-to-modem communication speed
-print "setting communication speed"
+print("setting communication speed")
 ser.write("at+zbitrate=460800\r")
 sleep(1)
-print ser.read(ser.inWaiting())
+print(ser.read(ser.inWaiting()))
 sleep(1)
 ser.close()
 sleep(1)
-print "finished setting communication speed"
+print("finished setting communication speed")
 
 
