@@ -136,8 +136,8 @@ tempDir = tempfile.gettempdir()
 print("temporary directory:", tempDir)
 
 if commandArgs.google_tts:
-    import google.cloud.texttospeech
-    import google.cloud.storage
+    from google.cloud import texttospeech, storage
+    
     client = texttospeech.TextToSpeechClient(
         credentials=storage.Client.from_service_account_json(
             commandArgs.google_key_file)
