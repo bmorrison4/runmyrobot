@@ -140,7 +140,7 @@ if commandArgs.google_tts:
     
     client = texttospeech.TextToSpeechClient(
         credentials=storage.Client.from_service_account_json(
-            commandArgs.google_key_file)
+            commandArgs.google_auth_key)
     )
     voice = texttospeech.types.VoiceSelectionParams(
         name=commandArgs.google_voice,
